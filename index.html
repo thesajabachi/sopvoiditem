@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Montauk Holding - POS Void Item Control Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        montauk: {
+                            navy: '#0A1128',
+                            blue: '#1C2541',
+                            gold: '#C5B358',
+                            goldlight: '#DFD59E',
+                            pearl: '#F4F5F7',
+                            steel: '#475569'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0A1128;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1C2541;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #C5B358;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="text-montauk-pearl h-full flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-montauk-blue border-b border-montauk-gold/30 px-6 py-4 flex flex-wrap items-center justify-between gap-4 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="bg-montauk-gold text-montauk-navy p-2.5 rounded-lg font-black tracking-wider text-xl">
+                MH
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                    MONTAUK HOLDING
+                    <span class="text-xs font-semibold bg-montauk-gold/10 text-montauk-gold px-2.5 py-0.5 rounded-full border border-montauk-gold/30">ADGM</span>
+                </h1>
+                <p class="text-xs text-slate-400">Interactive Void Item SOP &amp; Operational Controls</p>
+            </div>
+        </div>
+
+        <!-- Role Filters -->
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs text-slate-400 font-semibold mr-1">Filter by Responsibility:</span>
+            <button onclick="filterRole('all')" id="btn-all" class="role-btn px-3 py-1.5 rounded-lg text-xs font-medium transition bg-montauk-gold text-montauk-navy border border-montauk-gold">
+                All Steps
+            </button>
+            <button onclick="filterRole('cashier')" id="btn-cashier" class="role-btn px-3 py-1.5 rounded-lg text-xs font-medium transition bg-montauk-blue text-slate-300 border border-slate-700 hover:border-montauk-gold/50">
+                Cashier
+            </button>
+            <button onclick="filterRole('supervisor')" id="btn-supervisor" class="role-btn px-3 py-1.5 rounded-lg text-xs font-medium transition bg-montauk-blue text-slate-300 border border-slate-700 hover:border-montauk-gold/50">
+                Floor Supervisor
+            </button>
+            <button onclick="filterRole('manager')" id="btn-manager" class="role-btn px-3 py-1.5 rounded-lg text-xs font-medium transition bg-montauk-blue text-slate-300 border border-slate-700 hover:border-montauk-gold/50">
+                Restaurant Manager
+            </button>
+            <button onclick="filterRole('fadhel')" id="btn-fadhel" class="role-btn px-3 py-1.5 rounded-lg text-xs font-medium transition bg-montauk-blue text-slate-300 border border-slate-700 hover:border-montauk-gold/50">
+                Mr. Fadhel (Operations)
+            </button>
+            <button onclick="filterRole('sajjad')" id="btn-sajjad" class="role-btn px-3 py-1.5 rounded-lg text-xs font-medium transition bg-montauk-blue text-slate-300 border border-slate-700 hover:border-montauk-gold/50">
+                Mr. Sajjad (Business Architect)
+            </button>
+            <button onclick="filterRole('ashiq')" id="btn-ashiq" class="role-btn px-3 py-1.5 rounded-lg text-xs font-medium transition bg-montauk-blue text-slate-300 border border-slate-700 hover:border-montauk-gold/50">
+                Mr. Ashiq (Accounts)
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+
+        <!-- Left Side: Interactive Flow Map -->
+        <section class="flex-1 overflow-y-auto p-6 bg-[#070D1E] border-r border-slate-800">
+            <div class="max-w-3xl mx-auto space-y-4 pb-12">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-montauk-gold flex items-center gap-2">
+                        <i class="fa-solid fa-ban"></i> 8-Step Void Item Control Lifecycle
+                    </h2>
+                    <span class="text-xs text-slate-400">Click any step card to inspect procedural criteria</span>
+                </div>
+
+                <div id="flowcharts-container" class="space-y-3">
+                    <!-- Cards populated by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Side: Control Panels & Utilities -->
+        <section class="w-full lg:w-[480px] shrink-0 bg-montauk-blue flex flex-col overflow-y-auto border-t lg:border-t-0 border-slate-800">
+
+            <!-- Tab Headers -->
+            <div class="flex border-b border-slate-800 bg-montauk-navy shrink-0 sticky top-0 z-10">
+                <button onclick="switchTab('detail')" id="tab-detail-btn" class="flex-1 py-3 text-center text-xs font-bold uppercase tracking-wider border-b-2 border-montauk-gold text-montauk-gold flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-list-check"></i> Step Inspector
+                </button>
+                <button onclick="switchTab('auth')" id="tab-auth-btn" class="flex-1 py-3 text-center text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-user-shield"></i> Void Auth Checker
+                </button>
+                <button onclick="switchTab('namer')" id="tab-namer-btn" class="flex-1 py-3 text-center text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-file-signature"></i> Compliance Namer
+                </button>
+            </div>
+
+            <!-- Tab Content: Step Inspector -->
+            <div id="tab-detail" class="p-6 space-y-6 flex-1">
+                <div id="inspector-placeholder" class="text-center py-12 text-slate-500">
+                    <i class="fa-solid fa-circle-info text-4xl mb-4 text-slate-600"></i>
+                    <p class="text-sm">Click any step on the left flowchart map to load detailed audit guardrails and support checklist requirements.</p>
+                </div>
+
+                <div id="inspector-content" class="hidden space-y-6">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <span id="inspect-step-num" class="text-xs font-black text-montauk-gold uppercase tracking-widest bg-montauk-gold/10 border border-montauk-gold/30 px-2 py-0.5 rounded">STEP 01</span>
+                            <h3 id="inspect-step-title" class="text-lg font-bold text-white mt-2">Pre-Void Verification</h3>
+                        </div>
+                        <div id="inspect-icon-container" class="bg-slate-800/80 text-montauk-gold p-3 rounded-xl border border-slate-700 shrink-0">
+                            <i class="fa-solid fa-magnifying-glass text-xl"></i>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-[#0D152D] p-3 rounded-lg border border-slate-800">
+                            <span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Responsible Party</span>
+                            <span id="inspect-role" class="text-xs font-semibold text-montauk-goldlight flex items-center gap-1"></span>
+                        </div>
+                        <div class="bg-[#0D152D] p-3 rounded-lg border border-slate-800">
+                            <span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Operational Channel</span>
+                            <span id="inspect-channel" class="text-xs font-semibold text-slate-200"></span>
+                        </div>
+                    </div>
+
+                    <div class="bg-red-500/10 border border-red-500/20 p-4 rounded-xl space-y-1">
+                        <div class="flex items-center gap-2 text-red-400 text-xs font-bold uppercase tracking-wider">
+                            <i class="fa-solid fa-shield-halved"></i> Mandatory Guardrail / Rules
+                        </div>
+                        <p id="inspect-guardrail" class="text-xs text-slate-300 leading-relaxed"></p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold text-montauk-gold uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-list-check"></i> Audit Checklist &amp; Actions
+                        </h4>
+                        <ul id="inspect-checklist" class="space-y-2 text-xs text-slate-300"></ul>
+                    </div>
+
+                    <div class="bg-[#0D152D] border border-slate-800 p-4 rounded-xl space-y-3">
+                        <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-folder-open text-montauk-gold"></i> Required Supporting Docs
+                        </h4>
+                        <div id="inspect-docs" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Void Authorization Checker -->
+            <div id="tab-auth" class="hidden p-6 space-y-6 flex-1">
+                <div class="space-y-2">
+                    <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-montauk-gold"></i> Void Authorization Checker
+                    </h3>
+                    <p class="text-xs text-slate-400">Simulate POS void scenarios against Montauk threshold and manager-approval rules before processing on the terminal.</p>
+                </div>
+
+                <div class="bg-[#0D152D] border border-slate-800 rounded-xl p-4 space-y-4 text-xs">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[10px] text-slate-400 font-semibold block mb-1">Void Amount (AED)</label>
+                            <input type="number" id="auth-amount" value="125.00" step="0.01" min="0" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white text-xs mt-1" oninput="runVoidAuthCheck()">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 font-semibold block mb-1">Item Type</label>
+                            <select id="auth-item-type" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white text-xs mt-1" onchange="runVoidAuthCheck()">
+                                <option value="food">Food</option>
+                                <option value="beverage">Beverage</option>
+                                <option value="alcohol">Alcohol</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[10px] text-slate-400 font-semibold block mb-1">Reason Code</label>
+                            <select id="auth-reason" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white text-xs mt-1" onchange="runVoidAuthCheck()">
+                                <option value="WRONG_ITEM">WRONG_ITEM — Wrong item entered</option>
+                                <option value="GUEST_REFUSED">GUEST_REFUSED — Guest declined item</option>
+                                <option value="KITCHEN_ERROR">KITCHEN_ERROR — Kitchen preparation error</option>
+                                <option value="DUPLICATE">DUPLICATE — Duplicate entry</option>
+                                <option value="QUALITY">QUALITY — Quality / temperature issue</option>
+                                <option value="OTHER">OTHER — Other (requires note)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 font-semibold block mb-1">Time Since Order (minutes)</label>
+                            <input type="number" id="auth-time" value="15" min="0" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white text-xs mt-1" oninput="runVoidAuthCheck()">
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-800">
+                        <label class="text-[10px] text-slate-400 font-semibold block mb-1">Manager PIN / Override Entered?</label>
+                        <select id="auth-manager-override" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white text-xs mt-1" onchange="runVoidAuthCheck()">
+                            <option value="no">No — Cashier / Supervisor only</option>
+                            <option value="yes">Yes — Restaurant Manager override applied</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="auth-result-card" class="rounded-xl border p-5 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Authorization Status:</span>
+                        <span id="auth-badge" class="px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase"></span>
+                    </div>
+                    <div id="auth-report-text" class="space-y-2 text-xs text-slate-300"></div>
+                    <div id="auth-warning-box" class="p-3 rounded-lg text-xs hidden"></div>
+                </div>
+
+                <div class="bg-[#070D1E] border border-slate-800 rounded-xl p-4 space-y-2 text-[10px] text-slate-400">
+                    <span class="font-bold text-slate-300 uppercase tracking-wider block">Reference Thresholds</span>
+                    <ul class="space-y-1 list-disc list-inside">
+                        <li>Void amount &gt; AED 50.00 requires Restaurant Manager approval</li>
+                        <li>All alcohol voids require Restaurant Manager approval</li>
+                        <li>Kitchen voids after 30 minutes require Restaurant Manager approval</li>
+                        <li>Reason code OTHER always requires manager note and approval</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab Content: Compliance Namer -->
+            <div id="tab-namer" class="hidden p-6 space-y-6 flex-1">
+                <div class="space-y-2">
+                    <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-file-signature text-montauk-gold"></i> Void Log Compliance Namer
+                    </h3>
+                    <p class="text-xs text-slate-400">Generate standardized void log filenames using the YYYYMMDD chronological date-lock format specified in our Document Management SOP.</p>
+                </div>
+
+                <div class="bg-[#0D152D] border border-slate-800 rounded-xl p-4 space-y-4 text-xs">
+                    <div>
+                        <label class="text-[10px] text-slate-400 font-semibold block mb-1">Void Transaction Date</label>
+                        <input type="date" id="namer-date" value="2026-06-21" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white text-xs mt-1" oninput="generateFileName()">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[10px] text-slate-400 font-semibold block mb-1">Branch Code</label>
+                            <select id="namer-branch" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white text-xs mt-1" onchange="generateFileName()">
+                                <option value="Branch01">Branch01 — Marina</option>
+                                <option value="Branch02">Branch02 — Downtown</option>
+                                <option value="Branch03">Branch03 — JBR</option>
+                                <option value="Branch04">Branch04 — DIFC</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 font-semibold block mb-1">Reason Code</label>
+                            <select id="namer-reason" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white text-xs mt-1" onchange="generateFileName()">
+                                <option value="WRONG_ITEM">WRONG_ITEM</option>
+                                <option value="GUEST_REFUSED">GUEST_REFUSED</option>
+                                <option value="KITCHEN_ERROR">KITCHEN_ERROR</option>
+                                <option value="DUPLICATE">DUPLICATE</option>
+                                <option value="QUALITY">QUALITY</option>
+                                <option value="OTHER">OTHER</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] text-slate-400 font-semibold block mb-1">Void Amount (AED)</label>
+                        <input type="number" id="namer-value" value="125.00" step="0.01" min="0" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white text-xs mt-1" oninput="generateFileName()">
+                    </div>
+                </div>
+
+                <div class="bg-[#070D1E] border border-slate-800 rounded-xl p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-montauk-gold uppercase tracking-wider">Output File String:</span>
+                        <button onclick="copyFileName()" class="text-xs text-slate-400 hover:text-montauk-gold transition flex items-center gap-1 bg-slate-800 px-2 py-1 rounded">
+                            <i class="fa-regular fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div id="namer-output-string" class="bg-slate-900 p-3 rounded font-mono text-xs text-amber-300 break-all border border-slate-800">
+                        20260621_VOID_Branch01_WRONG_ITEM_125.00.pdf
+                    </div>
+                    <div class="space-y-1 mt-2 text-xs">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Destination Archiving Directory:</span>
+                        <div id="namer-output-path" class="text-slate-300 flex items-center gap-1.5 font-semibold">
+                            <i class="fa-regular fa-folder-open text-montauk-gold"></i> 02-POS-Operations / VOID 001 - Daily Logs
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Status -->
+    <footer class="bg-montauk-navy border-t border-slate-800 px-6 py-2.5 flex items-center justify-between text-[11px] text-slate-500 shrink-0">
+        <div>Montauk Holding Governance, Risk &amp; Compliance Framework</div>
+        <div>Current Version: 1.0 (POS Void Item Control — ADGM Standardized)</div>
+    </footer>
+
+    <script>
+        const stepsData = [
+            {
+                id: 1,
+                number: "01",
+                title: "Pre-Void Verification",
+                icon: "fa-solid fa-magnifying-glass",
+                roleId: "cashier",
+                roleName: "Cashier / Server",
+                channel: "POS Terminal / Floor",
+                guardrail: "NO VOID WITHOUT VERIFICATION: Confirm the item was actually rung in, the guest is still on premises (or order is open), and the void is not a duplicate of an earlier correction. Voids on closed/paid checks require Restaurant Manager escalation.",
+                checklist: [
+                    "Locate the open check or ticket on the POS terminal.",
+                    "Verify item name, quantity, and price match the void request.",
+                    "Confirm guest is present or order is still active (not settled).",
+                    "Check void history on the same check for duplicate corrections.",
+                    "Pause and escalate if the check is already closed or paid."
+                ],
+                docs: ["Open Check Screenshot", "Void Request Note"]
+            },
+            {
+                id: 2,
+                number: "02",
+                title: "Reason Code Selection",
+                icon: "fa-solid fa-tags",
+                roleId: "cashier",
+                roleName: "Cashier / Server",
+                channel: "POS Reason Code Menu",
+                guardrail: "MANDATORY REASON CODE: Every void must carry an approved reason code from the POS dropdown. Blank, generic, or 'OTHER' without a written note is prohibited. Reason codes drive fraud analytics and shift reporting.",
+                checklist: [
+                    "Select the correct reason code: WRONG_ITEM, GUEST_REFUSED, KITCHEN_ERROR, DUPLICATE, QUALITY, or OTHER.",
+                    "If OTHER is selected, enter a minimum 10-character explanation in the notes field.",
+                    "Do not reuse reason codes that do not match the actual situation.",
+                    "Attach table number and server ID if prompted by the POS."
+                ],
+                docs: ["Reason Code Reference Sheet", "POS Void Log Entry"]
+            },
+            {
+                id: 3,
+                number: "03",
+                title: "Supervisor Authorization",
+                icon: "fa-solid fa-user-shield",
+                roleId: "supervisor",
+                roleName: "Floor Supervisor",
+                channel: "POS Override / PIN",
+                guardrail: "THRESHOLD GATE: Voids exceeding AED 50.00, all alcohol items, kitchen errors after 30 minutes, and any OTHER reason code require Restaurant Manager PIN override. Floor Supervisor may authorize standard food/beverage voids under AED 50 within 30 minutes.",
+                checklist: [
+                    "Review void amount, item type, and reason code on the supervisor screen.",
+                    "Verify time elapsed since order was fired to the kitchen.",
+                    "Apply Floor Supervisor PIN for qualifying low-value voids.",
+                    "Call Restaurant Manager for PIN override when thresholds are breached.",
+                    "Log supervisor name and timestamp in the void audit trail."
+                ],
+                docs: ["Supervisor Override Log", "Manager Approval Record"]
+            },
+            {
+                id: 4,
+                number: "04",
+                title: "POS Void Entry",
+                icon: "fa-solid fa-cash-register",
+                roleId: "cashier",
+                roleName: "Cashier / Server",
+                channel: "POS Terminal",
+                guardrail: "CORRECT POS PROCEDURE: Void the specific line item only — never void an entire check unless authorized by Restaurant Manager. Post-void, re-ring corrected items as a new line. Deleting checks or using 'No Sale' to mask voids is a terminable offense.",
+                checklist: [
+                    "Select the exact line item to void (not the full check).",
+                    "Confirm reason code and supervisor/manager authorization are applied.",
+                    "Execute void and verify the check total updates correctly.",
+                    "Re-enter corrected items as new lines if applicable.",
+                    "Print or save the void receipt for shift folder."
+                ],
+                docs: ["Void Receipt Printout", "Corrected Check Copy"]
+            },
+            {
+                id: 5,
+                number: "05",
+                title: "Kitchen Notification",
+                icon: "fa-solid fa-bell-concierge",
+                roleId: "supervisor",
+                roleName: "Floor Supervisor / Expo",
+                channel: "KDS / Kitchen Pass / WhatsApp",
+                guardrail: "KITCHEN SYNC GUARDRAIL: Any void for items already in preparation or served must be communicated to the kitchen immediately. Failure to notify causes food waste, inventory drift, and comp abuse. Expo must acknowledge void on the KDS or kitchen log.",
+                checklist: [
+                    "Identify whether the voided item was fired, in prep, or already plated.",
+                    "Notify expo or kitchen lead via KDS bump-back or verbal confirmation.",
+                    "Record kitchen acknowledgment (initials or KDS timestamp).",
+                    "For served items, confirm whether item was returned or comped separately.",
+                    "Flag waste items for inventory adjustment if applicable."
+                ],
+                docs: ["KDS Void Acknowledgment", "Kitchen Waste Log"]
+            },
+            {
+                id: 6,
+                number: "06",
+                title: "Shift Reconciliation",
+                icon: "fa-solid fa-clock-rotate-left",
+                roleId: "manager",
+                roleName: "Restaurant Manager",
+                channel: "End-of-Shift POS Report",
+                guardrail: "SHIFT CLOSE RECONCILIATION: Restaurant Manager must review the void report before shift close. Total void value per server must not exceed branch daily threshold (default AED 500/server/shift). Excess triggers same-day review with Mr. Fadhel.",
+                checklist: [
+                    "Pull the shift void summary report from POS.",
+                    "Cross-check each void against reason codes and supervisor approvals.",
+                    "Verify void count and value per server against branch thresholds.",
+                    "Investigate any voids without matching authorization records.",
+                    "Sign and file the shift void reconciliation sheet."
+                ],
+                docs: ["Shift Void Summary Report", "Signed Shift Reconciliation Sheet"]
+            },
+            {
+                id: 7,
+                number: "07",
+                title: "Daily Void Review",
+                icon: "fa-solid fa-chart-line",
+                roleId: "fadhel",
+                roleName: "Mr. Fadhel / Mr. Sajjad",
+                channel: "Holding Ops Dashboard / Email",
+                guardrail: "DAILY EXECUTIVE REVIEW: Mr. Fadhel and Mr. Sajjad review consolidated void metrics across all branches by 10:00 AM next business day. Branches exceeding 2% of gross sales in voids or showing pattern anomalies (same server, same item, end-of-shift clustering) are flagged for immediate callback.",
+                checklist: [
+                    "Consolidate branch void reports into the holding dashboard.",
+                    "Calculate void-to-sales ratio per branch and per vertical.",
+                    "Flag branches exceeding 2% void ratio or AED 500/server/shift.",
+                    "Identify pattern anomalies: repeated reason codes, time clustering, high-value voids.",
+                    "Issue callback or corrective action note to branch Restaurant Manager."
+                ],
+                docs: ["Daily Void Dashboard Export", "Branch Callback Memo"]
+            },
+            {
+                id: 8,
+                number: "08",
+                title: "Weekly Fraud Audit",
+                icon: "fa-solid fa-user-secret",
+                roleId: "ashiq",
+                roleName: "Mr. Ashiq / Accounts",
+                channel: "ERP / CCTV Cross-Reference",
+                guardrail: "WEEKLY FRAUD AUDIT: Mr. Ashiq performs pattern analysis every Monday, cross-referencing POS void logs with CCTV timestamps, inventory waste reports, and comp/discount registers. Suspected collusion or systematic void abuse is escalated to Mr. Fadhel within 24 hours.",
+                checklist: [
+                    "Extract weekly void log dataset from all branch POS systems.",
+                    "Cross-reference high-value voids (&gt; AED 50) with CCTV footage timestamps.",
+                    "Match kitchen waste logs against KITCHEN_ERROR and QUALITY voids.",
+                    "Compare void patterns against employee schedule and section assignments.",
+                    "Document findings and escalate suspected fraud to Mr. Fadhel."
+                ],
+                docs: ["Weekly Void Audit Report", "CCTV Cross-Reference Log", "Fraud Escalation Memo"]
+            }
+        ];
+
+        let activeStep = 1;
+
+        window.onload = function() {
+            renderFlowcharts();
+            inspectStep(1);
+            runVoidAuthCheck();
+            generateFileName();
+        };
+
+        function getRoleBadgeColor(roleId) {
+            const colors = {
+                cashier: "bg-cyan-500/10 text-cyan-300 border-cyan-500/30",
+                supervisor: "bg-indigo-500/10 text-indigo-300 border-indigo-500/30",
+                manager: "bg-violet-500/10 text-violet-300 border-violet-500/30",
+                fadhel: "bg-amber-500/10 text-amber-300 border-amber-500/30",
+                sajjad: "bg-rose-500/10 text-rose-300 border-rose-500/30",
+                ashiq: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+            };
+            return colors[roleId] || "bg-slate-800 text-slate-400 border-slate-700";
+        }
+
+        function renderFlowcharts() {
+            const container = document.getElementById('flowcharts-container');
+            container.innerHTML = '';
+
+            stepsData.forEach(step => {
+                const badgeColor = getRoleBadgeColor(step.roleId);
+                const isActive = step.id === activeStep
+                    ? 'border-montauk-gold bg-[#0F1C3F] ring-1 ring-montauk-gold/50'
+                    : 'border-slate-800 bg-[#0B1226] hover:border-slate-700';
+
+                container.innerHTML += `
+                    <div id="step-card-${step.id}" onclick="inspectStep(${step.id})" class="step-card transition duration-200 border rounded-xl p-4 cursor-pointer flex items-center justify-between gap-4 ${isActive}">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center font-bold text-sm bg-slate-900 border border-slate-800 ${step.id === activeStep ? 'text-montauk-gold border-montauk-gold/45' : 'text-slate-400'}">
+                                ${step.number}
+                            </div>
+                            <div class="space-y-1">
+                                <h4 class="text-xs font-black uppercase tracking-wider text-slate-400">Step Name</h4>
+                                <h3 class="text-sm font-bold text-white leading-tight">${step.title}</h3>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-[10px] uppercase font-black px-2 py-0.5 rounded border ${badgeColor}">
+                                        ${step.roleName}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-slate-500 hover:text-slate-300 transition shrink-0 p-1">
+                            <i class="${step.icon} text-lg"></i>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function inspectStep(stepId) {
+            activeStep = stepId;
+
+            document.querySelectorAll('.step-card').forEach(card => {
+                card.classList.remove('border-montauk-gold', 'bg-[#0F1C3F]', 'ring-1', 'ring-montauk-gold/50');
+                card.classList.add('border-slate-800', 'bg-[#0B1226]');
+            });
+
+            const activeCard = document.getElementById(`step-card-${stepId}`);
+            if (activeCard) {
+                activeCard.classList.remove('border-slate-800', 'bg-[#0B1226]');
+                activeCard.classList.add('border-montauk-gold', 'bg-[#0F1C3F]', 'ring-1', 'ring-montauk-gold/50');
+            }
+
+            const step = stepsData.find(s => s.id === stepId);
+            if (!step) return;
+
+            document.getElementById('inspector-placeholder').classList.add('hidden');
+            document.getElementById('inspector-content').classList.remove('hidden');
+
+            document.getElementById('inspect-step-num').innerText = `Step ${step.number}`;
+            document.getElementById('inspect-step-title').innerText = step.title;
+            document.getElementById('inspect-role').innerText = step.roleName;
+            document.getElementById('inspect-channel').innerText = step.channel;
+            document.getElementById('inspect-guardrail').innerText = step.guardrail;
+
+            document.getElementById('inspect-icon-container').innerHTML = `<i class="${step.icon} text-xl"></i>`;
+
+            const listEl = document.getElementById('inspect-checklist');
+            listEl.innerHTML = '';
+            step.checklist.forEach(chk => {
+                listEl.innerHTML += `
+                    <li class="flex items-start gap-2 bg-[#090F21] p-2 rounded border border-slate-800">
+                        <i class="fa-regular fa-square-check text-montauk-gold mt-0.5"></i>
+                        <span>${chk}</span>
+                    </li>
+                `;
+            });
+
+            const docsContainer = document.getElementById('inspect-docs');
+            docsContainer.innerHTML = '';
+            step.docs.forEach(doc => {
+                docsContainer.innerHTML += `
+                    <span class="text-[11px] font-mono font-semibold bg-slate-900 border border-slate-700 text-montauk-goldlight px-2.5 py-1 rounded flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-pdf"></i> ${doc}
+                    </span>
+                `;
+            });
+
+            switchTab('detail');
+        }
+
+        function filterRole(roleId) {
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.className = "role-btn px-3 py-1.5 rounded-lg text-xs font-medium transition bg-montauk-blue text-slate-300 border border-slate-700 hover:border-montauk-gold/50";
+            });
+
+            document.getElementById(`btn-${roleId}`).className = "role-btn px-3 py-1.5 rounded-lg text-xs font-medium transition bg-montauk-gold text-montauk-navy border border-montauk-gold";
+
+            document.querySelectorAll('.step-card').forEach((card, index) => {
+                const step = stepsData[index];
+                const match = roleId === 'all' || step.roleId === roleId;
+                card.style.display = match ? 'flex' : 'none';
+            });
+        }
+
+        function switchTab(tabName) {
+            ['detail', 'auth', 'namer'].forEach(name => {
+                document.getElementById(`tab-${name}`).classList.add('hidden');
+                document.getElementById(`tab-${name}-btn`).className = "flex-1 py-3 text-center text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-2";
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}-btn`).className = "flex-1 py-3 text-center text-xs font-bold uppercase tracking-wider border-b-2 border-montauk-gold text-montauk-gold flex items-center justify-center gap-2";
+        }
+
+        function runVoidAuthCheck() {
+            const amount = parseFloat(document.getElementById('auth-amount').value) || 0;
+            const itemType = document.getElementById('auth-item-type').value;
+            const reason = document.getElementById('auth-reason').value;
+            const timeMinutes = parseFloat(document.getElementById('auth-time').value) || 0;
+            const managerOverride = document.getElementById('auth-manager-override').value === 'yes';
+
+            const badge = document.getElementById('auth-badge');
+            const card = document.getElementById('auth-result-card');
+            const report = document.getElementById('auth-report-text');
+            const warning = document.getElementById('auth-warning-box');
+
+            let results = [];
+            let warnings = [];
+            let requiresManager = false;
+            let triggers = [];
+
+            if (amount > 50) {
+                requiresManager = true;
+                triggers.push(`Void amount AED ${amount.toFixed(2)} exceeds AED 50.00 threshold`);
+            } else {
+                results.push(`<span class="text-emerald-400"><i class="fa-solid fa-check-double"></i> Amount Check:</span> Void of AED ${amount.toFixed(2)} is within cashier/supervisor threshold (≤ AED 50.00).`);
+            }
+
+            if (itemType === 'alcohol') {
+                requiresManager = true;
+                triggers.push('Alcohol voids always require Restaurant Manager approval');
+            } else {
+                results.push(`<span class="text-emerald-400"><i class="fa-solid fa-check-double"></i> Item Type:</span> ${itemType.charAt(0).toUpperCase() + itemType.slice(1)} void does not trigger alcohol rule.`);
+            }
+
+            const kitchenReasons = ['KITCHEN_ERROR', 'QUALITY'];
+            if (kitchenReasons.includes(reason) && timeMinutes > 30) {
+                requiresManager = true;
+                triggers.push(`Kitchen-related void (${reason}) after ${timeMinutes} minutes exceeds 30-minute window`);
+            } else if (kitchenReasons.includes(reason)) {
+                results.push(`<span class="text-emerald-400"><i class="fa-solid fa-check-double"></i> Time Window:</span> Kitchen void at ${timeMinutes} min is within the 30-minute supervisor window.`);
+            } else {
+                results.push(`<span class="text-emerald-400"><i class="fa-solid fa-check-double"></i> Time Window:</span> Non-kitchen reason code — time threshold not applicable.`);
+            }
+
+            if (reason === 'OTHER') {
+                requiresManager = true;
+                triggers.push('Reason code OTHER requires written note and Restaurant Manager approval');
+            } else {
+                results.push(`<span class="text-emerald-400"><i class="fa-solid fa-check-double"></i> Reason Code:</span> ${reason} is an approved standard code.`);
+            }
+
+            let pass = true;
+
+            if (requiresManager) {
+                results.push(`<span class="text-amber-400"><i class="fa-solid fa-user-shield"></i> Manager Required:</span> ${triggers.join('; ')}.`);
+                if (managerOverride) {
+                    results.push(`<span class="text-emerald-400"><i class="fa-solid fa-check-double"></i> Override Applied:</span> Restaurant Manager PIN/override confirmed — void may proceed.`);
+                } else {
+                    pass = false;
+                    warnings.push('Restaurant Manager PIN override required before processing this void on the POS terminal.');
+                }
+            }
+
+            if (pass) {
+                badge.className = "px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30";
+                badge.innerText = "PASS";
+                card.className = "rounded-xl border border-emerald-500/30 bg-emerald-950/10 p-5 space-y-4";
+                warning.classList.add('hidden');
+            } else {
+                badge.className = "px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase bg-red-500/10 text-red-400 border border-red-500/30";
+                badge.innerText = "HOLD";
+                card.className = "rounded-xl border border-red-500/30 bg-red-950/10 p-5 space-y-4";
+                warning.classList.remove('hidden');
+                warning.className = "p-3 rounded-lg text-xs bg-red-500/15 border border-red-500/30 text-red-300 font-semibold";
+                warning.innerHTML = `⚠️ ACTION REQUIRED:<br>` + warnings.join('<br>');
+            }
+
+            report.innerHTML = results.map(r => `<div class="py-1 border-b border-slate-800 last:border-b-0">${r}</div>`).join('');
+        }
+
+        function generateFileName() {
+            const dateInput = document.getElementById('namer-date').value;
+            const branch = document.getElementById('namer-branch').value;
+            const reason = document.getElementById('namer-reason').value;
+            const val = parseFloat(document.getElementById('namer-value').value) || 0;
+
+            const dateFormatted = dateInput.replace(/-/g, '');
+            const fileName = `${dateFormatted}_VOID_${branch}_${reason}_${val.toFixed(2)}.pdf`;
+
+            document.getElementById('namer-output-string').innerText = fileName;
+
+            let folderPath = '';
+            if (val > 50) {
+                folderPath = `<i class="fa-regular fa-folder-open text-montauk-gold"></i> 02-POS-Operations / VOID 002 - Manager Review <span class="text-slate-500 text-xs">(High-Value)</span>`;
+            } else {
+                folderPath = `<i class="fa-regular fa-folder-open text-montauk-gold"></i> 02-POS-Operations / VOID 001 - Daily Logs`;
+            }
+
+            document.getElementById('namer-output-path').innerHTML = folderPath;
+        }
+
+        function copyFileName() {
+            const str = document.getElementById('namer-output-string').innerText;
+            const el = document.createElement('textarea');
+            el.value = str;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+        }
+    </script>
+</body>
+</html>
